@@ -21,7 +21,7 @@ def compute_distance(x1, y1, x2, y2):
     return (abs(x1 - x2) + abs(y1 - y2))
 
 
-# Algorithm1: Minimum Matching
+# Minimum Matching
 
 # Compute the minimum pooling plan between two passengers. 0:xyxy, 1:xyyx, 2:yxxy, 3:yxyx; 4:no pool
 def min_matching(x, y):
@@ -95,73 +95,9 @@ def pool(route, dist):
 
 
 
-# Algorithm2: integer programming
-def twoCycle(vertices, edges):
-    '''
-    Returns a dictionary of 2 cycles. Keys: (u,v), Value: weight of cycle
-    Note that u < v to not double count cycles.
-    '''
-    twoCycles = {}
-    for edge in edges:
-        u = edge[0]
-        v = edge[1]
-        if (u < v and (v,u) in edges):
-            twoCycles[(u,v)] = edges[(u,v)] + edges[(v,u)]
-    return twoCycles
-
-def threeCycle(vertices, edges):
-    '''
-    Returns a dictionary of 3 cycles. Keys: (u,w,v), Value: weight of cycle
-    Note that w is always the lowest numbered vertex to not double
-    (or triple) count cycles.
-    '''
-    threeCycles = {}
-    for edge in edges:
-        u = edge[0]
-        v = edge[1]
-        for w in vertices:
-            if (w >= u or w >= v ):
-                break
-            if ( (u,w) in edges and (w,v) in edges ):
-                threeCycles[(u,w,v)] = edges[(u,v)] + edges[(u,w)] + edges[(w,v)]
-    return threeCycles
-
-
+# Test
 dist = Get_dist(b)
 vertices,edges= min_matching_graph(dist)
 twoCycles = twoCycle(vertices, edges)
 threeCycles = threeCycle(vertices, edges)
-
-
-
-# Gurobi
-m = Model()
-
-c = {}
-
-for cycle in twoCycles:
-    c[cycle] = m.addVar(vtype=GRB.BINARY, name="c_%s" % str(cycle))
-
-for cycle in threeCycles:
-    c[cycle] = m.addVar(vtype=GRB.BINARY, name="c_%s" % str(cycle))
-
-m.update()
-
-for v in vertices:
-  constraint = []
-  for cycle in c:
-      if (v in cycle):
-          constraint.append(c[cycle])
-  if constraint:
-      m.addConstr( quicksum( constraint[i] for i in range(len(constraint)) ) <= 1 , name="v%d" % v)
-
-m.setObjective( quicksum( c[cycle] * twoCycles[cycle] for cycle in twoCycles ) +
-                quicksum( c[cycle] * threeCycles[cycle] for cycle in threeCycles ),
-                GRB.MAXIMIZE )
-
-m.optimize()
-
-obj = m.getObjective()
-print(obj)
-
 
