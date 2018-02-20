@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-from gurobipy import *
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
 import networkx as nx
-
-
+from gurobipy import *
 
 #load data from dataset,filter the data based on passenger number
 def Get_dist(f):
@@ -23,6 +20,8 @@ def Get_dist(f):
 def compute_distance(x1, y1, x2, y2):
     return (abs(x1 - x2) + abs(y1 - y2))
 
+
+# Algorithm1: Minimum Matching
 
 # Compute the minimum pooling plan between two passengers. 0:xyxy, 1:xyyx, 2:yxxy, 3:yxyx; 4:no pool
 def min_matching(x, y):
@@ -95,6 +94,8 @@ def pool(route, dist):
     return pool_dist, pool_route, sum(pool_dist)
 
 
+
+# Algorithm2: integer programming
 def twoCycle(vertices, edges):
     '''
     Returns a dictionary of 2 cycles. Keys: (u,v), Value: weight of cycle
@@ -131,6 +132,9 @@ vertices,edges= min_matching_graph(dist)
 twoCycles = twoCycle(vertices, edges)
 threeCycles = threeCycle(vertices, edges)
 
+
+
+# Gurobi
 m = Model()
 
 c = {}
@@ -159,8 +163,5 @@ m.optimize()
 
 obj = m.getObjective()
 print(obj)
-
-
-
 
 
